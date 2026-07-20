@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, abort
 from app import db
 from app.models import Article
 
-public_bp = Blueprint('public', __name__, template_folder='templates')
+public_bp = Blueprint('public', __name__)
 
 ARTICLES_PER_PAGE = 12
 
@@ -95,4 +95,6 @@ def article_detail(article_id):
 
 @public_bp.route('/category/<category_name>')
 def category(category_name):
-    return index()
+    """Redirect category links into the filtered index view."""
+    from flask import redirect, url_for
+    return redirect(url_for('public.index', category=category_name))

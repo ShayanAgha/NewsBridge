@@ -1,18 +1,25 @@
+import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+
 from config import Config
 
 db = SQLAlchemy()
 
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(_BASE_DIR, 'templates'),
+        static_folder=os.path.join(_BASE_DIR, 'static'),
+    )
     app.config.from_object(Config)
 
-    # Initialize extensions
     db.init_app(app)
 
-    # Register Blueprints (flat modules, no subpackages)
     from app.api_routes import api_bp
     from app.public_routes import public_bp
     from app.admin_routes import admin_bp
@@ -21,7 +28,6 @@ def create_app():
     app.register_blueprint(public_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
-    # Create database tables
     with app.app_context():
         db.create_all()
 
