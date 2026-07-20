@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, current_app
 from sqlalchemy import func
 
 from app import db
@@ -11,6 +11,19 @@ ARTICLES_PER_PAGE = 12
 
 @public_bp.route('/')
 def index():
+    try:
+        return _render_index()
+    except Exception as exc:
+        # Surface the real error while debugging Vercel 500s
+        current_app.logger.exception('index failed')
+        return (
+            f'<h1>Homepage error</h1><pre>{type(exc).__name__}: {exc}</pre>',
+            500,
+            {'Content-Type': 'text/html; charset=utf-8'},
+        )
+
+
+def _render_index():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('q', '').strip()
     category = request.args.get('category', '').strip()
