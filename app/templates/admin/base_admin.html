@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin{% endblock %} | NewsBridge Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="admin-layout">
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav" aria-label="Admin navigation">
+      <div class="sidebar-nav-brand">📡 NewsBridge</div>
+      <a href="{{ url_for('admin.dashboard') }}"
+         class="sidebar-nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+        <span class="icon" aria-hidden="true">📊</span> Dashboard
+      </a>
+      <a href="{{ url_for('admin.articles') }}"
+         class="sidebar-nav-link {% if request.endpoint == 'admin.articles' %}active{% endif %}">
+        <span class="icon" aria-hidden="true">📝</span> Articles
+      </a>
+      <a href="{{ url_for('api.health') }}" class="sidebar-nav-link" target="_blank" rel="noopener">
+        <span class="icon" aria-hidden="true">🔌</span> API Status
+      </a>
+      <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--clr-border)">
+        <a href="{{ url_for('public.index') }}" class="sidebar-nav-link" target="_blank">
+          <span class="icon" aria-hidden="true">🌐</span> View Website
+        </a>
+        <a href="{{ url_for('admin.logout') }}" class="sidebar-nav-link" style="color:var(--clr-danger)">
+          <span class="icon" aria-hidden="true">🚪</span> Logout
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+  </div>
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,141 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Articles{% endblock %}
+
+{% block content %}
+<div class="admin-header animate-fade-in">
+  <div>
+    <h1 class="admin-page-title">Articles</h1>
+    <p style="color:var(--clr-text-muted);font-size:0.875rem;margin-top:0.25rem">
+      {{ pagination.total }} total article{{ 's' if pagination.total != 1 else '' }}
+    </p>
+  </div>
+</div>
+
+<!-- Search & Filter -->
+<form method="get" action="{{ url_for('admin.articles') }}" id="articles-filter-form" aria-label="Filter articles">
+  <div class="filter-bar" style="margin-bottom:1.5rem">
+    <label for="article-search" class="sr-only">Search articles</label>
+    <div style="position:relative;flex:1;max-width:360px">
+      <span style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--clr-text-dim)" aria-hidden="true">🔍</span>
+      <input type="search" name="q" id="article-search" value="{{ search }}"
+             placeholder="Search by title…"
+             class="form-input" style="padding-left:2.5rem;background:var(--clr-surface-2)">
+    </div>
+
+    <label for="status-filter" class="sr-only">Status</label>
+    <select name="status" id="status-filter" class="filter-select" data-auto-submit>
+      <option value="" {% if not status_filter %}selected{% endif %}>All Status</option>
+      <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
+      <option value="unpublished" {% if status_filter == 'unpublished' %}selected{% endif %}>Unpublished</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary btn-sm" id="article-search-btn">Search</button>
+    {% if search or status_filter %}
+    <a href="{{ url_for('admin.articles') }}" class="btn btn-outline btn-sm">Clear</a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Articles Table -->
+<div class="admin-table-wrap animate-fade-in" style="animation-delay:0.1s">
+  {% if articles %}
+  <table class="admin-table" aria-label="Articles table">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Title</th>
+        <th scope="col">Source</th>
+        <th scope="col">Category</th>
+        <th scope="col">Status</th>
+        <th scope="col">Views</th>
+        <th scope="col">Imported</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for article in articles %}
+      <tr>
+        <td style="color:var(--clr-text-dim);font-size:0.78rem">#{{ article.id }}</td>
+        <td>
+          <div class="table-title">
+            <a href="{{ url_for('public.article_detail', article_id=article.id) }}" target="_blank"
+               style="color:var(--clr-white)" title="{{ article.title }}">
+              {{ article.title }}
+            </a>
+          </div>
+        </td>
+        <td class="table-source">{{ article.source_name or '—' }}</td>
+        <td>
+          {% if article.category %}
+          <span class="badge badge-accent" style="font-size:0.7rem">{{ article.category }}</span>
+          {% else %}<span style="color:var(--clr-text-dim)">—</span>{% endif %}
+        </td>
+        <td>
+          {% if article.is_published %}
+          <span class="badge badge-success">Published</span>
+          {% else %}
+          <span class="badge badge-danger">Hidden</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--clr-text-muted)">{{ article.views }}</td>
+        <td style="font-size:0.78rem;color:var(--clr-text-dim)">
+          {{ article.created_at.strftime('%b %d, %Y') }}
+        </td>
+        <td>
+          <div style="display:flex;gap:0.4rem">
+            <!-- Toggle Published -->
+            <form method="post" action="{{ url_for('admin.toggle_article', article_id=article.id) }}" style="display:inline">
+              <button type="submit" class="btn btn-outline btn-sm"
+                      title="{{ 'Unpublish' if article.is_published else 'Publish' }}"
+                      id="toggle-article-{{ article.id }}">
+                {{ '👁' if article.is_published else '🚫' }}
+              </button>
+            </form>
+            <!-- Delete -->
+            <form method="post" action="{{ url_for('admin.delete_article', article_id=article.id) }}" style="display:inline">
+              <button type="submit" class="btn btn-danger btn-sm"
+                      data-confirm="Delete '{{ article.title[:40] }}'? This cannot be undone."
+                      title="Delete article"
+                      id="delete-article-{{ article.id }}">
+                🗑
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Pagination -->
+  {% if pagination.pages > 1 %}
+  <div style="padding:1rem 1.25rem;border-top:1px solid var(--clr-border);display:flex;justify-content:center">
+    <nav class="pagination" aria-label="Articles pagination">
+      {% if pagination.has_prev %}
+      <a href="{{ url_for('admin.articles', page=pagination.prev_num, q=search, status=status_filter) }}" class="page-btn" aria-label="Previous">‹</a>
+      {% endif %}
+      {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+          <a href="{{ url_for('admin.articles', page=page_num, q=search, status=status_filter) }}"
+             class="page-btn {% if page_num == pagination.page %}active{% endif %}"
+             aria-label="Page {{ page_num }}">{{ page_num }}</a>
+        {% else %}
+          <span class="page-btn" style="cursor:default">…</span>
+        {% endif %}
+      {% endfor %}
+      {% if pagination.has_next %}
+      <a href="{{ url_for('admin.articles', page=pagination.next_num, q=search, status=status_filter) }}" class="page-btn" aria-label="Next">›</a>
+      {% endif %}
+    </nav>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state" role="status">
+    <div class="empty-state-icon" aria-hidden="true">📭</div>
+    <h2 class="empty-state-title">No articles found</h2>
+    <p class="empty-state-text">No articles have been imported yet. Set up Make.com to start receiving articles.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

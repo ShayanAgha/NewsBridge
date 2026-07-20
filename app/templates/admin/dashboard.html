@@ -1,0 +1,152 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-header animate-fade-in">
+  <div>
+    <h1 class="admin-page-title">Dashboard</h1>
+    <p style="color:var(--clr-text-muted);font-size:0.875rem;margin-top:0.25rem">
+      Welcome back, admin · Real-time NewsBridge stats
+    </p>
+  </div>
+  <div style="display:flex;gap:0.75rem">
+    <a href="{{ url_for('admin.articles') }}" class="btn btn-outline btn-sm">View Articles</a>
+    <a href="{{ url_for('public.index') }}" class="btn btn-primary btn-sm" target="_blank">🌐 Live Site</a>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="stat-grid">
+  <div class="stat-card animate-fade-in" style="animation-delay:0.05s">
+    <div class="stat-icon">📰</div>
+    <div class="stat-value">{{ total_articles }}</div>
+    <div class="stat-label">Total Articles</div>
+  </div>
+  <div class="stat-card animate-fade-in" style="animation-delay:0.1s">
+    <div class="stat-icon">✅</div>
+    <div class="stat-value">{{ published_articles }}</div>
+    <div class="stat-label">Published</div>
+  </div>
+  <div class="stat-card animate-fade-in" style="animation-delay:0.15s">
+    <div class="stat-icon">📅</div>
+    <div class="stat-value">{{ today_articles }}</div>
+    <div class="stat-label">Imported Today</div>
+  </div>
+  <div class="stat-card animate-fade-in" style="animation-delay:0.2s">
+    <div class="stat-icon">📡</div>
+    <div class="stat-value">{{ sources_data | length }}</div>
+    <div class="stat-label">Active Sources</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem">
+
+  <!-- 7-day Import History -->
+  <div class="sidebar-card animate-fade-in" style="animation-delay:0.25s">
+    <div class="section-header" style="margin-bottom:1.25rem">
+      <h2 class="section-title" style="font-size:1rem">📈 Last 7 Days</h2>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:0.5rem;height:120px" role="img" aria-label="Import history bar chart">
+      {% set max_count = import_history | map(attribute='count') | max | default(1) %}
+      {% for day in import_history %}
+      {% set bar_height = ((day.count / [max_count, 1] | max) * 100) | int %}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0.3rem" title="{{ day.date }}: {{ day.count }} articles">
+        <span style="font-size:0.7rem;color:var(--clr-text-dim);font-weight:600">{{ day.count }}</span>
+        <div style="width:100%;height:{{ [bar_height, 4] | max }}px;background:var(--grad-accent);border-radius:4px 4px 0 0;min-height:4px;transition:height 0.5s"></div>
+        <span style="font-size:0.65rem;color:var(--clr-text-dim);white-space:nowrap">{{ day.date }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Articles by Category -->
+  <div class="sidebar-card animate-fade-in" style="animation-delay:0.3s">
+    <div class="section-header" style="margin-bottom:1.25rem">
+      <h2 class="section-title" style="font-size:1rem">📂 By Category</h2>
+    </div>
+    {% if categories_data %}
+    {% set total_cat = categories_data | map(attribute=1) | sum %}
+    {% for cat, count in categories_data[:6] %}
+    <div style="margin-bottom:0.75rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem">
+        <span style="font-size:0.8rem;font-weight:500;color:var(--clr-text)">{{ cat or 'General' }}</span>
+        <span style="font-size:0.75rem;color:var(--clr-text-dim)">{{ count }}</span>
+      </div>
+      <div style="height:5px;background:var(--clr-surface-2);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:{{ ((count / [total_cat, 1] | max) * 100) | int }}%;background:var(--grad-accent);border-radius:3px"></div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color:var(--clr-text-dim);font-size:0.875rem">No data yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Bottom Row -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+
+  <!-- Most Viewed -->
+  <div class="sidebar-card animate-fade-in" style="animation-delay:0.35s">
+    <div class="section-header" style="margin-bottom:1rem">
+      <h2 class="section-title" style="font-size:1rem">🏆 Most Viewed</h2>
+    </div>
+    {% if most_viewed %}
+    <a href="{{ url_for('public.article_detail', article_id=most_viewed.id) }}" target="_blank"
+       style="display:flex;gap:1rem;align-items:flex-start;color:inherit">
+      <div style="font-size:2rem;flex-shrink:0">🏅</div>
+      <div>
+        <p style="font-weight:600;font-size:0.875rem;color:var(--clr-white);line-height:1.4;margin-bottom:0.4rem">{{ most_viewed.title }}</p>
+        <p style="font-size:0.78rem;color:var(--clr-text-dim)">👁 {{ most_viewed.views }} views · {{ most_viewed.source_name or '' }}</p>
+      </div>
+    </a>
+    {% else %}
+    <p style="color:var(--clr-text-dim);font-size:0.875rem">No articles yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Latest Import -->
+  <div class="sidebar-card animate-fade-in" style="animation-delay:0.4s">
+    <div class="section-header" style="margin-bottom:1rem">
+      <h2 class="section-title" style="font-size:1rem">🕐 Latest Import</h2>
+    </div>
+    {% if latest_import %}
+    <a href="{{ url_for('public.article_detail', article_id=latest_import.id) }}" target="_blank"
+       style="display:flex;gap:1rem;align-items:flex-start;color:inherit">
+      <div style="font-size:2rem;flex-shrink:0">📬</div>
+      <div>
+        <p style="font-weight:600;font-size:0.875rem;color:var(--clr-white);line-height:1.4;margin-bottom:0.4rem">{{ latest_import.title }}</p>
+        <p style="font-size:0.78rem;color:var(--clr-text-dim)">
+          {{ latest_import.created_at.strftime('%b %d, %Y %H:%M') }} UTC · {{ latest_import.source_name or '' }}
+        </p>
+      </div>
+    </a>
+    {% else %}
+    <p style="color:var(--clr-text-dim);font-size:0.875rem">No imports yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Top Sources -->
+  <div class="sidebar-card animate-fade-in" style="animation-delay:0.45s;grid-column:1/-1">
+    <div class="section-header" style="margin-bottom:1rem">
+      <h2 class="section-title" style="font-size:1rem">📡 Top Sources</h2>
+    </div>
+    {% if sources_data %}
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem">
+      {% for src, count in sources_data %}
+      <div style="background:var(--clr-surface-2);border:1px solid var(--clr-border);border-radius:var(--radius-sm);padding:0.6rem 1rem;display:flex;align-items:center;gap:0.5rem">
+        <span class="card-source-dot" aria-hidden="true"></span>
+        <span style="font-size:0.85rem;font-weight:600;color:var(--clr-text)">{{ src or 'Unknown' }}</span>
+        <span class="badge badge-accent" style="font-size:0.7rem">{{ count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--clr-text-dim);font-size:0.875rem">No data yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
