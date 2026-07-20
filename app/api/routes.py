@@ -44,12 +44,11 @@ def create_news():
         return jsonify({'status': 'error', 'message': 'Invalid JSON body.'}), 400
 
     # 3. Validate required fields
-    required_fields = ['title', 'source_url']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'status': 'error', 'message': f'Missing required field: {field}'}), 400
+    title = (data.get('title') or '').strip()
+    source_url = (data.get('source_url') or '').strip()
 
-    source_url = data.get('source_url', '').strip()
+    if not title or not source_url:
+        return jsonify({'status': 'error', 'message': 'Missing required fields: title and source_url must be non-empty strings.'}), 400
 
     # 4. Check for duplicate
     existing = Article.query.filter_by(source_url=source_url).first()
@@ -69,14 +68,14 @@ def create_news():
 
     # 6. Create and save article
     article = Article(
-        title=data.get('title', '').strip(),
-        summary=data.get('summary', '').strip() or None,
+        title=title,
+        summary=(data.get('summary') or '').strip() or None,
         source_url=source_url,
-        image_url=data.get('image_url', '').strip() or None,
+        image_url=(data.get('image_url') or '').strip() or None,
         published_at=published_at,
-        source_name=data.get('source_name', '').strip() or None,
-        category=data.get('category', 'General').strip() or 'General',
-        tags=data.get('tags', '').strip() or None,
+        source_name=(data.get('source_name') or '').strip() or None,
+        category=(data.get('category') or 'General').strip() or 'General',
+        tags=(data.get('tags') or '').strip() or None,
     )
 
     db.session.add(article)
