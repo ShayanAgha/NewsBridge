@@ -5,7 +5,7 @@ from config import Config
 from datetime import datetime, timedelta
 from sqlalchemy import func
 
-admin_bp = Blueprint('admin', __name__, template_folder='templates')
+admin_bp = Blueprint('admin', __name__)
 
 
 def login_required(f):

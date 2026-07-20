@@ -31,15 +31,22 @@ venv/
 ENV/
 env/
 
-# Environments (contains secrets)
+# Environments (secrets stay local; keep .env.example)
 .env
-.env.*
+.env.local
+.env.*.local
+!.env.example
 
 # Local databases
 instance/
 *.db
 *.sqlite
 
-# IDEs
+# IDEs / OS
 .vscode/
 .idea/
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel/
