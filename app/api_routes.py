@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app, render_template
+from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models import Article
 from datetime import datetime
@@ -97,56 +97,4 @@ def list_news():
 @api_bp.route('/health', methods=['GET'])
 def health():
     """GET /api/health — Public health check endpoint."""
-    return jsonify({'status': 'ok', 'message': 'NewsBridge API is running.', 'build': 'site-templates'}), 200
-
-
-@api_bp.route('/debug-index', methods=['GET'])
-def debug_index():
-    """Temporary diagnostics for homepage failures on Vercel."""
-    from sqlalchemy import func
-
-    steps = []
-    try:
-        steps.append('query')
-        published_or_created = func.coalesce(Article.published_at, Article.created_at)
-        query = Article.query.filter_by(is_published=True).order_by(published_or_created.desc())
-        steps.append('paginate')
-        pagination = query.paginate(page=1, per_page=12, error_out=False)
-        steps.append(f'items:{len(pagination.items)}')
-        steps.append('featured')
-        featured = Article.query.filter_by(is_published=True).order_by(Article.views.desc()).first()
-        steps.append('latest')
-        latest = Article.query.filter_by(is_published=True).order_by(Article.created_at.desc()).limit(5).all()
-        steps.append('trending')
-        trending = Article.query.filter_by(is_published=True).order_by(Article.views.desc()).limit(6).all()
-        steps.append('categories')
-        categories_raw = db.session.query(Article.category).filter(
-            Article.is_published == True, Article.category.isnot(None)
-        ).distinct().all()
-        steps.append('sources')
-        sources_raw = db.session.query(Article.source_name).filter(
-            Article.is_published == True, Article.source_name.isnot(None)
-        ).distinct().all()
-        steps.append('render')
-        html = render_template(
-            'site/index.html',
-            articles=pagination.items,
-            pagination=pagination,
-            featured=featured,
-            latest=latest,
-            trending=trending,
-            categories=sorted({c[0] for c in categories_raw if c[0]}),
-            sources=sorted({s[0] for s in sources_raw if s[0]}),
-            search='',
-            selected_category='',
-            selected_source='',
-            sort='newest',
-        )
-        return jsonify({'status': 'ok', 'steps': steps, 'html_len': len(html)}), 200
-    except Exception as exc:
-        return jsonify({
-            'status': 'error',
-            'steps': steps,
-            'error': str(exc),
-            'type': type(exc).__name__,
-        }), 500
+    return jsonify({'status': 'ok', 'message': 'NewsBridge API is running.'}), 200
