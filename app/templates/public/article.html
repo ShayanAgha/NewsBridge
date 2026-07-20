@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title[:60] }}{% endblock %}
+{% block meta_description %}{{ article.summary[:160] if article.summary else article.title }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem; max-width: 1100px">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" style="margin-bottom:1.5rem; font-size:0.82rem; color:var(--clr-text-dim)">
+    <a href="{{ url_for('public.index') }}" style="color:var(--clr-text-muted)">Home</a>
+    <span style="margin:0 0.5rem">›</span>
+    {% if article.category %}
+    <a href="{{ url_for('public.index', category=article.category) }}" style="color:var(--clr-text-muted)">{{ article.category }}</a>
+    <span style="margin:0 0.5rem">›</span>
+    {% endif %}
+    <span>{{ article.title[:50] }}{% if article.title|length > 50 %}…{% endif %}</span>
+  </nav>
+
+  <!-- Article Hero Image -->
+  {% if article.image_url %}
+  <div class="article-hero animate-fade-in">
+    <img src="{{ article.image_url }}" alt="{{ article.title }}"
+         onerror="this.parentElement.style.display='none'">
+    <div class="article-hero-overlay" aria-hidden="true"></div>
+    <div class="article-hero-content">
+      {% if article.category %}
+      <span class="badge badge-accent" style="margin-bottom:0.75rem">{{ article.category }}</span>
+      {% endif %}
+      <h1 class="article-title">{{ article.title }}</h1>
+      <div class="article-meta-bar" role="complementary" aria-label="Article information">
+        {% if article.source_name %}
+        <span class="article-meta-item">
+          <span aria-hidden="true">📰</span> {{ article.source_name }}
+        </span>
+        {% endif %}
+        <span class="article-meta-item">
+          <span aria-hidden="true">🕐</span>
+          <time datetime="{{ article.published_at.isoformat() if article.published_at else article.created_at.isoformat() }}">
+            {{ article.time_ago() }}
+          </time>
+        </span>
+        <span class="article-meta-item">
+          <span aria-hidden="true">📖</span> {{ article.reading_time() }} min read
+        </span>
+        <span class="article-meta-item">
+          <span aria-hidden="true">👁</span> {{ article.views }} views
+        </span>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <!-- No image: show meta above article -->
+  <header style="margin-bottom:2rem">
+    {% if article.category %}
+    <span class="badge badge-accent" style="margin-bottom:0.75rem">{{ article.category }}</span>
+    {% endif %}
+    <h1 class="article-title" style="color:var(--clr-white);font-family:var(--font-serif);font-size:clamp(1.8rem,3vw,2.5rem);font-weight:800;line-height:1.2;margin-bottom:1rem">
+      {{ article.title }}
+    </h1>
+    <div class="article-meta-bar animate-fade-in">
+      {% if article.source_name %}
+      <span class="article-meta-item" style="color:var(--clr-text-muted)">
+        <span aria-hidden="true">📰</span> {{ article.source_name }}
+      </span>
+      {% endif %}
+      <span class="article-meta-item" style="color:var(--clr-text-muted)">
+        <span aria-hidden="true">🕐</span>
+        <time datetime="{{ article.published_at.isoformat() if article.published_at else article.created_at.isoformat() }}">
+          {{ article.time_ago() }}
+        </time>
+      </span>
+      <span class="article-meta-item" style="color:var(--clr-text-muted)">
+        <span aria-hidden="true">📖</span> {{ article.reading_time() }} min read
+      </span>
+    </div>
+  </header>
+  {% endif %}
+
+  <!-- Article Layout -->
+  <div style="display:grid; grid-template-columns: 1fr 280px; gap: 3rem; margin-top: 2.5rem" class="article-layout">
+
+    <!-- Article Body -->
+    <div>
+      <div class="article-body animate-fade-in">
+        {% if article.summary %}
+        <p style="font-size:1.15rem;font-weight:500;color:var(--clr-text);line-height:1.8;border-left:3px solid var(--clr-accent);padding-left:1.25rem;margin-bottom:2rem">
+          {{ article.summary }}
+        </p>
+        {% endif %}
+        <p style="color:var(--clr-text-muted);font-size:0.9rem;">
+          This article was automatically collected from
+          <strong style="color:var(--clr-text)">{{ article.source_name or 'an RSS feed' }}</strong>
+          by NewsBridge's automated system. Read the full article at the original source.
+        </p>
+      </div>
+
+      <!-- Share Bar -->
+      <div class="share-bar" role="group" aria-label="Share this article">
+        <span class="share-label">Share:</span>
+        <button class="share-btn fb" data-share="facebook" aria-label="Share on Facebook" title="Facebook">f</button>
+        <button class="share-btn tw" data-share="twitter" aria-label="Share on Twitter / X" title="Twitter/X">𝕏</button>
+        <button class="share-btn li" data-share="linkedin" aria-label="Share on LinkedIn" title="LinkedIn">in</button>
+        <button class="share-btn wa" data-share="whatsapp" aria-label="Share on WhatsApp" title="WhatsApp">💬</button>
+      </div>
+
+      <!-- Read Original CTA -->
+      <div style="margin-bottom:2rem">
+        <a href="{{ article.source_url }}" target="_blank" rel="noopener noreferrer" class="read-original-btn" id="read-original-btn">
+          Read Full Article at {{ article.source_name or 'Source' }} ↗
+        </a>
+      </div>
+
+      <!-- Tags -->
+      {% if article.get_tags_list() %}
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1.5rem">
+        {% for tag in article.get_tags_list() %}
+        <a href="{{ url_for('public.index', q=tag) }}" class="badge badge-cyan" style="cursor:pointer"># {{ tag }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Sidebar -->
+    <aside aria-label="Related and source info">
+
+      <!-- Source Info Card -->
+      <div class="sidebar-card" style="margin-bottom:1.5rem">
+        <h2 class="section-title" style="font-size:1rem;margin-bottom:1rem">📰 Source</h2>
+        <p style="font-size:0.875rem;color:var(--clr-text-muted);margin-bottom:0.5rem">
+          <strong style="color:var(--clr-text)">{{ article.source_name or 'Unknown' }}</strong>
+        </p>
+        {% if article.published_at %}
+        <p style="font-size:0.8rem;color:var(--clr-text-dim)">
+          Published {{ article.published_at.strftime('%B %d, %Y at %H:%M') }} UTC
+        </p>
+        {% endif %}
+        <a href="{{ article.source_url }}" target="_blank" rel="noopener noreferrer"
+           class="btn btn-outline btn-sm" style="margin-top:1rem;width:100%;justify-content:center">
+          Visit Source ↗
+        </a>
+      </div>
+
+      <!-- Related Articles -->
+      {% if related %}
+      <div class="sidebar-card">
+        <h2 class="section-title" style="font-size:1rem;margin-bottom:1rem">🔗 Related</h2>
+        {% for rel in related %}
+        <a href="{{ url_for('public.article_detail', article_id=rel.id) }}" class="mini-article">
+          <span class="mini-article-num">{{ loop.index }}</span>
+          <div>
+            <p class="mini-article-title">{{ rel.title }}</p>
+            <p class="mini-article-meta">{{ rel.time_ago() }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </aside>
+
+  </div><!-- /article-layout -->
+
+  <!-- Back Button -->
+  <div style="margin-top:3rem">
+    <a href="{{ url_for('public.index') }}" class="btn btn-outline">
+      ← Back to All News
+    </a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @media (max-width: 768px) {
+    .article-layout { grid-template-columns: 1fr !important; }
+  }
+</style>
+{% endblock %}

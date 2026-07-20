@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | NewsBridge</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-page">
+  <main>
+    <div class="login-card animate-fade-in" role="main">
+      <div style="text-align:center;margin-bottom:1.5rem">
+        <div style="font-size:2.5rem;margin-bottom:0.5rem">⚙️</div>
+        <h1 class="login-title">Admin Portal</h1>
+        <p class="login-subtitle">NewsBridge Control Center</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, msg in messages %}
+        <div class="alert alert-{{ category }}" role="alert">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post" action="{{ url_for('admin.login') }}" id="admin-login-form" novalidate>
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" name="username" id="username" class="form-input"
+                 placeholder="Enter username" required autocomplete="username" autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" name="password" id="password" class="form-input"
+                 placeholder="Enter password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm form-submit" id="login-submit-btn">
+          Sign In →
+        </button>
+      </form>
+
+      <div style="margin-top:1.5rem;text-align:center">
+        <a href="{{ url_for('public.index') }}" style="font-size:0.82rem;color:var(--clr-text-dim)">
+          ← Back to Website
+        </a>
+      </div>
+    </div>
+  </main>
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</body>
+</html>

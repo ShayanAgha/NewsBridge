@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Latest News{% endblock %}
+{% block meta_description %}Stay updated with the latest news from around the world — powered by NewsBridge, your automated news aggregator.{% endblock %}
+
+{% block ticker %}
+{% if latest %}
+<div class="ticker-bar" role="marquee" aria-live="polite">
+  <div class="ticker-inner container">
+    <span class="ticker-label">🔴 Breaking</span>
+    <div class="ticker-track" id="ticker-track">
+      {% for item in latest %}
+      <a href="{{ url_for('public.article_detail', article_id=item.id) }}" class="ticker-item">{{ item.title }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Hero / Featured Article -->
+  {% if featured and not search and not selected_category %}
+  <section class="hero animate-fade-in" aria-label="Featured article">
+    {% if featured.image_url %}
+    <img src="{{ featured.image_url }}" alt="{{ featured.title }}" class="hero-image" loading="eager">
+    {% else %}
+    <div class="hero-image" style="background: linear-gradient(135deg,#111827,#1a2235);width:100%;height:100%;"></div>
+    {% endif %}
+    <div class="hero-overlay" aria-hidden="true"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge badge-accent">⭐ Featured</span>
+        {% if featured.category %}
+        <span class="badge badge-purple" style="margin-left:.5rem">{{ featured.category }}</span>
+        {% endif %}
+      </div>
+      <h1 class="hero-title">
+        <a href="{{ url_for('public.article_detail', article_id=featured.id) }}" style="color:inherit">{{ featured.title }}</a>
+      </h1>
+      {% if featured.summary %}
+      <p class="hero-summary">{{ featured.summary }}</p>
+      {% endif %}
+      <div class="hero-meta">
+        {% if featured.source_name %}<span>{{ featured.source_name }}</span><span class="hero-meta-dot"></span>{% endif %}
+        <span>{{ featured.time_ago() }}</span>
+        <span class="hero-meta-dot"></span>
+        <span>{{ featured.reading_time() }} min read</span>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="page-layout">
+
+    <!-- Main Content -->
+    <div>
+
+      <!-- Filter Bar -->
+      <form method="get" action="{{ url_for('public.index') }}" id="filter-form" aria-label="Filter and sort articles">
+        {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+        <div class="filter-bar">
+          <span style="font-size:0.8rem;color:var(--clr-text-muted);font-weight:600">FILTER</span>
+
+          <label for="filter-category" class="sr-only">Category</label>
+          <select name="category" id="filter-category" class="filter-select" data-auto-submit aria-label="Filter by category">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="filter-source" class="sr-only">Source</label>
+          <select name="source" id="filter-source" class="filter-select" data-auto-submit aria-label="Filter by source">
+            <option value="">All Sources</option>
+            {% for src in sources %}
+            <option value="{{ src }}" {% if selected_source == src %}selected{% endif %}>{{ src }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="filter-sort" class="sr-only">Sort by</label>
+          <select name="sort" id="filter-sort" class="filter-select" data-auto-submit aria-label="Sort articles">
+            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+            <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most Viewed</option>
+          </select>
+
+          {% if search or selected_category or selected_source %}
+          <a href="{{ url_for('public.index') }}" class="btn btn-outline btn-sm" aria-label="Clear filters">✕ Clear</a>
+          {% endif %}
+
+          <span style="margin-left:auto;font-size:0.8rem;color:var(--clr-text-dim)">
+            {{ pagination.total }} article{{ 's' if pagination.total != 1 else '' }}
+          </span>
+        </div>
+      </form>
+
+      <!-- Search Heading -->
+      {% if search %}
+      <div class="section-header" style="margin-bottom:1.5rem">
+        <h2 class="section-title">Results for "{{ search }}"</h2>
+      </div>
+      {% elif selected_category %}
+      <div class="section-header" style="margin-bottom:1.5rem">
+        <h2 class="section-title">{{ selected_category }}</h2>
+      </div>
+      {% else %}
+      <div class="section-header">
+        <h2 class="section-title">Latest News</h2>
+        <span class="live-dot" aria-label="Live updates"></span>
+      </div>
+      {% endif %}
+
+      <!-- Article Grid -->
+      {% if articles %}
+      <div class="card-grid" role="list" aria-label="News articles">
+        {% for article in articles %}
+        <article class="card" role="listitem">
+          <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="card-image-wrap" aria-label="{{ article.title }}">
+            {% if article.image_url %}
+            <img data-src="{{ article.image_url }}" src="" alt="{{ article.title }}" class="card-image" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=card-image-placeholder>📰</div>'">
+            {% else %}
+            <div class="card-image-placeholder" aria-hidden="true">📰</div>
+            {% endif %}
+            {% if article.category %}
+            <span class="card-category badge badge-accent">{{ article.category }}</span>
+            {% endif %}
+          </a>
+
+          <div class="card-body">
+            <h3 class="card-title">
+              <a href="{{ url_for('public.article_detail', article_id=article.id) }}">{{ article.title }}</a>
+            </h3>
+            {% if article.summary %}
+            <p class="card-summary">{{ article.summary }}</p>
+            {% endif %}
+
+            <div class="card-footer">
+              <div class="card-source">
+                <span class="card-source-dot" aria-hidden="true"></span>
+                <span>{{ article.source_name or 'Unknown' }}</span>
+              </div>
+              <div class="card-meta">
+                <span class="card-meta-item" title="Views">👁 {{ article.views }}</span>
+                <span class="card-meta-item" title="Published">🕐 {{ article.time_ago() }}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if pagination.pages > 1 %}
+      <nav class="pagination" aria-label="Page navigation">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('public.index', page=pagination.prev_num, q=search, category=selected_category, source=selected_source, sort=sort) }}"
+           class="page-btn" aria-label="Previous page">‹</a>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if page_num %}
+            <a href="{{ url_for('public.index', page=page_num, q=search, category=selected_category, source=selected_source, sort=sort) }}"
+               class="page-btn {% if page_num == pagination.page %}active{% endif %}"
+               aria-label="Page {{ page_num }}" {% if page_num == pagination.page %}aria-current="page"{% endif %}>{{ page_num }}</a>
+          {% else %}
+            <span class="page-btn" style="cursor:default;color:var(--clr-text-dim)">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('public.index', page=pagination.next_num, q=search, category=selected_category, source=selected_source, sort=sort) }}"
+           class="page-btn" aria-label="Next page">›</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+
+      {% else %}
+      <div class="empty-state" role="status" aria-live="polite">
+        <div class="empty-state-icon" aria-hidden="true">📭</div>
+        <h2 class="empty-state-title">No articles found</h2>
+        <p class="empty-state-text">
+          {% if search %}No results for "{{ search }}". Try a different keyword.
+          {% else %}No articles have been imported yet. Once Make.com sends articles to the API, they'll appear here.
+          {% endif %}
+        </p>
+        {% if search %}
+        <a href="{{ url_for('public.index') }}" class="btn btn-outline" style="margin-top:1.5rem">View All News</a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div><!-- /main -->
+
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Sidebar">
+
+      <!-- Trending -->
+      {% if trending %}
+      <div class="sidebar-card animate-fade-in">
+        <div class="section-header" style="margin-bottom:1rem">
+          <h2 class="section-title" style="font-size:1.1rem">🔥 Trending</h2>
+        </div>
+        {% for article in trending %}
+        <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="mini-article" aria-label="{{ article.title }}">
+          <span class="mini-article-num">{{ loop.index }}</span>
+          <div>
+            <p class="mini-article-title">{{ article.title }}</p>
+            <p class="mini-article-meta">{{ article.source_name or '' }} · {{ article.time_ago() }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Categories -->
+      {% if categories %}
+      <div class="sidebar-card">
+        <div class="section-header" style="margin-bottom:1rem">
+          <h2 class="section-title" style="font-size:1.1rem">📂 Categories</h2>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+          {% for cat in categories %}
+          <a href="{{ url_for('public.index', category=cat) }}"
+             class="badge {% if selected_category == cat %}badge-purple{% else %}badge-accent{% endif %}"
+             style="font-size:0.78rem;padding:0.35rem 0.85rem;cursor:pointer">
+            {{ cat }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </aside><!-- /sidebar -->
+
+  </div><!-- /page-layout -->
+
+</div><!-- /container -->
+{% endblock %}
