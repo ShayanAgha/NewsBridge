@@ -97,7 +97,7 @@ def list_news():
 @api_bp.route('/health', methods=['GET'])
 def health():
     """GET /api/health — Public health check endpoint."""
-    return jsonify({'status': 'ok', 'message': 'NewsBridge API is running.', 'build': 'ab39f0d-coalesce'}), 200
+    return jsonify({'status': 'ok', 'message': 'NewsBridge API is running.', 'build': 'site-templates'}), 200
 
 
 @api_bp.route('/debug-index', methods=['GET'])
@@ -129,7 +129,7 @@ def debug_index():
         ).distinct().all()
         steps.append('render')
         html = render_template(
-            'public/index.html',
+            'site/index.html',
             articles=pagination.items,
             pagination=pagination,
             featured=featured,

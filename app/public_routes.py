@@ -78,7 +78,7 @@ def _render_index():
     sources = sorted({s[0] for s in sources_raw if s[0]})
 
     return render_template(
-        'public/index.html',
+        'site/index.html',
         articles=articles,
         pagination=pagination,
         featured=featured,
@@ -108,7 +108,7 @@ def article_detail(article_id):
         Article.is_published == True
     ).order_by(func.coalesce(Article.published_at, Article.created_at).desc()).limit(4).all()
 
-    return render_template('public/article.html', article=article, related=related)
+    return render_template('site/article.html', article=article, related=related)
 
 
 @public_bp.route('/category/<category_name>')
