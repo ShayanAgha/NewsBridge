@@ -12,10 +12,10 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
 
-    # Register Blueprints
-    from app.api.routes import api_bp
-    from app.public.routes import public_bp
-    from app.admin.routes import admin_bp
+    # Register Blueprints (flat modules, no subpackages)
+    from app.api_routes import api_bp
+    from app.public_routes import public_bp
+    from app.admin_routes import admin_bp
 
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(public_bp)

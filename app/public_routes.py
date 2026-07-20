@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, abort
 from app import db
 from app.models import Article
 
-public_bp = Blueprint('public', __name__, template_folder='../templates')
+public_bp = Blueprint('public', __name__, template_folder='templates')
 
 ARTICLES_PER_PAGE = 12
 
