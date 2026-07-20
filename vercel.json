@@ -3,7 +3,7 @@
   "functions": {
     "wsgi.py": {
       "maxDuration": 30,
-      "includeFiles": "app/**"
+      "includeFiles": "{app/templates/**,app/static/**,app/**/*.py,config.py}"
     }
   }
 }
