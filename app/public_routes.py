@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request, abort
+from flask import Blueprint, render_template, request, redirect, url_for
+from sqlalchemy import func
+
 from app import db
 from app.models import Article
 
@@ -28,12 +30,15 @@ def index():
     if source:
         query = query.filter(Article.source_name.ilike(f'%{source}%'))
 
+    # coalesce avoids SQLite-incompatible NULLS LAST (breaks on Vercel)
+    published_or_created = func.coalesce(Article.published_at, Article.created_at)
+
     if sort == 'oldest':
-        query = query.order_by(Article.published_at.asc())
+        query = query.order_by(published_or_created.asc())
     elif sort == 'popular':
         query = query.order_by(Article.views.desc())
     else:
-        query = query.order_by(Article.published_at.desc().nullslast(), Article.created_at.desc())
+        query = query.order_by(published_or_created.desc())
 
     pagination = query.paginate(page=page, per_page=ARTICLES_PER_PAGE, error_out=False)
     articles = pagination.items
@@ -88,7 +93,7 @@ def article_detail(article_id):
         Article.category == article.category,
         Article.id != article.id,
         Article.is_published == True
-    ).order_by(Article.published_at.desc()).limit(4).all()
+    ).order_by(func.coalesce(Article.published_at, Article.created_at).desc()).limit(4).all()
 
     return render_template('public/article.html', article=article, related=related)
 
@@ -96,5 +101,4 @@ def article_detail(article_id):
 @public_bp.route('/category/<category_name>')
 def category(category_name):
     """Redirect category links into the filtered index view."""
-    from flask import redirect, url_for
     return redirect(url_for('public.index', category=category_name))
