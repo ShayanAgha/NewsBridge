@@ -18,6 +18,6 @@ class Config:
         'connect_args': {'check_same_thread': False},
     }
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    API_BEARER_TOKEN = os.environ.get('API_BEARER_TOKEN', '1920391uoiewjr2934857252039jdfg487528t20913u4')
+    API_BEARER_TOKEN = os.environ.get('API_BEARER_TOKEN', 'Bearer 1920391uoiewjr2934857252039jdfg487528t20913u4')
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
