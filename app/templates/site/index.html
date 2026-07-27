@@ -42,8 +42,9 @@
       <h1 class="hero-title">
         <a href="{{ url_for('public.article_detail', article_id=featured.id) }}" style="color:inherit">{{ featured.title }}</a>
       </h1>
-      {% if featured.summary %}
-      <p class="hero-summary">{{ featured.summary }}</p>
+      {% set hero_preview = featured.clean_summary(280) %}
+      {% if hero_preview %}
+      <p class="hero-summary">{{ hero_preview }}</p>
       {% endif %}
       <div class="hero-meta">
         {% if featured.source_name %}<span>{{ featured.source_name }}</span><span class="hero-meta-dot"></span>{% endif %}
