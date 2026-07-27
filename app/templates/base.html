@@ -11,6 +11,9 @@
 </head>
 <body>
 
+  <!-- Mobile nav overlay (click-outside-to-close) -->
+  <div class="nav-overlay" id="nav-overlay" aria-hidden="true"></div>
+
   <!-- Breaking News Ticker -->
   {% block ticker %}
   {% if latest_ticker %}
@@ -43,7 +46,14 @@
                aria-label="Search news articles">
       </form>
 
-      <ul class="navbar-nav" role="list">
+      <!-- Hamburger toggle (mobile only) -->
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbar-nav">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <ul class="navbar-nav" id="navbar-nav" role="list">
         <li><a href="{{ url_for('public.index') }}" class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">Home</a></li>
         <li><a href="{{ url_for('public.index', category='Technology') }}" class="nav-link">Tech</a></li>
         <li><a href="{{ url_for('public.index', category='Business') }}" class="nav-link">Business</a></li>

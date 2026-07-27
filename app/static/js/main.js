@@ -40,21 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     track.innerHTML += clone; // duplicate for seamless infinite scroll
   }
 
-  // ── Image lazy loading with IntersectionObserver ───────────
-  const lazyImages = document.querySelectorAll('img[data-src]');
-  if ('IntersectionObserver' in window && lazyImages.length) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          img.src = img.dataset.src;
-          img.removeAttribute('data-src');
-          observer.unobserve(img);
-        }
-      });
-    }, { rootMargin: '200px' });
-    lazyImages.forEach(img => observer.observe(img));
-  }
+  // ── Image lazy loading: handled natively via loading="lazy" attr ──
+  // (Custom IntersectionObserver removed — native lazy loading is more reliable)
+
 
   // ── Confirm delete dialogs ─────────────────────────────────
   document.querySelectorAll('[data-confirm]').forEach(btn => {
@@ -65,6 +53,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // ── Mobile hamburger menu ──────────────────────────────────
+  const navToggle = document.getElementById('nav-toggle');
+  const navMenu   = document.getElementById('navbar-nav');
+  const navOverlay = document.getElementById('nav-overlay');
+
+  function openNav() {
+    navMenu.classList.add('open');
+    navToggle.classList.add('open');
+    navToggle.setAttribute('aria-expanded', 'true');
+    if (navOverlay) { navOverlay.classList.add('open'); navOverlay.removeAttribute('aria-hidden'); }
+    document.body.style.overflow = 'hidden';
+  }
+  function closeNav() {
+    navMenu.classList.remove('open');
+    navToggle.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+    if (navOverlay) { navOverlay.classList.remove('open'); navOverlay.setAttribute('aria-hidden', 'true'); }
+    document.body.style.overflow = '';
+  }
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+      navMenu.classList.contains('open') ? closeNav() : openNav();
+    });
+    if (navOverlay) navOverlay.addEventListener('click', closeNav);
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNav(); });
+    // Close when a nav link is clicked (page navigation)
+    navMenu.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', closeNav));
+  }
 
   // ── Animate elements on scroll (stagger) ──────────────────
   const animateTargets = document.querySelectorAll('.card, .stat-card, .mini-article');

@@ -106,6 +106,10 @@
       <div class="section-header" style="margin-bottom:1.5rem">
         <h2 class="section-title">{{ selected_category }}</h2>
       </div>
+      {% elif selected_source %}
+      <div class="section-header" style="margin-bottom:1.5rem">
+        <h2 class="section-title">{{ selected_source }}</h2>
+      </div>
       {% else %}
       <div class="section-header">
         <h2 class="section-title">Latest News</h2>
@@ -120,7 +124,7 @@
         <article class="card" role="listitem">
           <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="card-image-wrap" aria-label="{{ article.title }}">
             {% if article.image_url %}
-            <img data-src="{{ article.image_url }}" src="" alt="{{ article.title }}" class="card-image" loading="lazy"
+            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="card-image" loading="lazy"
                  onerror="this.parentElement.innerHTML='<div class=card-image-placeholder>📰</div>'">
             {% else %}
             <div class="card-image-placeholder" aria-hidden="true">📰</div>
