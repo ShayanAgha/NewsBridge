@@ -6,7 +6,7 @@ load_dotenv()
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', '123kjhjkh32891sdlk')
+    SECRET_KEY = os.environ.get('SECRET_KEY', '')
     # Use /tmp/ directory for SQLite if running on Vercel (serverless filesystem is read-only)
     if os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL'):
         SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/newsbridge.db'
@@ -18,6 +18,6 @@ class Config:
         'connect_args': {'check_same_thread': False},
     }
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    API_BEARER_TOKEN = os.environ.get('API_BEARER_TOKEN', 'Bearer 1920391uoiewjr2934857252039jdfg487528t20913u4')
-    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    API_BEARER_TOKEN = os.environ.get('API_BEARER_TOKEN', '')
+    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', '')
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')
