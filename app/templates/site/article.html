@@ -84,14 +84,14 @@
     <div>
       <div class="article-body animate-fade-in">
         {% if article.summary %}
-        <p style="font-size:1.15rem;font-weight:500;color:var(--clr-text);line-height:1.8;border-left:3px solid var(--clr-accent);padding-left:1.25rem;margin-bottom:2rem">
-          {{ article.summary }}
-        </p>
+        <div class="article-body-content">
+          {{ article.summary | safe }}
+        </div>
         {% endif %}
-        <p style="color:var(--clr-text-muted);font-size:0.9rem;">
-          This article was automatically collected from
-          <strong style="color:var(--clr-text)">{{ article.source_name or 'an RSS feed' }}</strong>
-          by NewsBridge's automated system. Read the full article at the original source.
+        <p class="article-source-note">
+          This story was curated from
+          <strong>{{ article.source_name or 'an external source' }}</strong>.
+          Read the full coverage at the original source below.
         </p>
       </div>
 

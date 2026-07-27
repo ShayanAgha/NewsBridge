@@ -8,10 +8,12 @@
 <div class="ticker-bar" role="marquee" aria-live="polite">
   <div class="ticker-inner container">
     <span class="ticker-label">🔴 Breaking</span>
-    <div class="ticker-track" id="ticker-track">
-      {% for item in latest %}
-      <a href="{{ url_for('public.article_detail', article_id=item.id) }}" class="ticker-item">{{ item.title }}</a>
-      {% endfor %}
+    <div class="ticker-scroll">
+      <div class="ticker-track" id="ticker-track">
+        {% for item in latest %}
+        <a href="{{ url_for('public.article_detail', article_id=item.id) }}" class="ticker-item">{{ item.title }}</a>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>
@@ -138,8 +140,9 @@
             <h3 class="card-title">
               <a href="{{ url_for('public.article_detail', article_id=article.id) }}">{{ article.title }}</a>
             </h3>
-            {% if article.summary %}
-            <p class="card-summary">{{ article.summary }}</p>
+            {% set preview = article.clean_summary() %}
+            {% if preview %}
+            <p class="card-summary">{{ preview }}</p>
             {% endif %}
 
             <div class="card-footer">
@@ -185,15 +188,21 @@
       {% else %}
       <div class="empty-state" role="status" aria-live="polite">
         <div class="empty-state-icon" aria-hidden="true">📭</div>
-        <h2 class="empty-state-title">No articles found</h2>
+        <h2 class="empty-state-title">
+          {% if search %}No results for "{{ search }}"
+          {% elif selected_category %}Nothing in {{ selected_category }} yet
+          {% elif selected_source %}Nothing from {{ selected_source }} yet
+          {% else %}You're early to the party!{% endif %}
+        </h2>
         <p class="empty-state-text">
-          {% if search %}No results for "{{ search }}". Try a different keyword.
-          {% else %}No articles have been imported yet. Once Make.com sends articles to the API, they'll appear here.
+          {% if search %}
+            We couldn't find anything matching "{{ search }}". Try a broader term or browse by category.
+          {% else %}
+            Fresh articles are on their way. Our automated system continuously collects
+            the latest stories — check back shortly or explore a different category.
           {% endif %}
         </p>
-        {% if search %}
-        <a href="{{ url_for('public.index') }}" class="btn btn-outline" style="margin-top:1.5rem">View All News</a>
-        {% endif %}
+        <a href="{{ url_for('public.index') }}" class="btn btn-outline" style="margin-top:1.5rem">Browse All News</a>
       </div>
       {% endif %}
 

@@ -41,9 +41,25 @@ class Article(db.Model):
             return [t.strip() for t in self.tags.split(',') if t.strip()]
         return []
 
+    def clean_summary(self, max_chars=200):
+        """Return plain-text summary with HTML stripped, truncated to max_chars."""
+        if not self.summary:
+            return ''
+        import re
+        # Strip all HTML tags
+        text = re.sub(r'<[^>]+>', ' ', self.summary)
+        # Collapse whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        if max_chars and len(text) > max_chars:
+            text = text[:max_chars].rsplit(' ', 1)[0] + '…'
+        return text
+
     def reading_time(self):
+        """Estimate reading time in minutes from plain-text content."""
         if self.summary:
-            words = len(self.summary.split())
+            import re
+            plain = re.sub(r'<[^>]+>', ' ', self.summary)
+            words = len(plain.split())
             minutes = max(1, round(words / 200))
             return minutes
         return 1
