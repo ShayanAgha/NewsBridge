@@ -50,3 +50,6 @@ Thumbs.db
 
 # Vercel
 .vercel/
+
+# Sensitive / accidentally committed files
+account.md.txt
